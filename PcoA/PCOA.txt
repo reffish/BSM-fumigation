@@ -1,0 +1,33 @@
+library(vegan)
+otu <- read.delim('otu.txt', row.names = 1, sep = '\t', stringsAsFactors = FALSE, check.names = FALSE)
+otu <- data.frame(t(otu))
+bray_dis <- vegdist(otu, method = 'bray')
+write.table(as.matrix(bray_dis), 'bray_distance.txt', sep = '\t', col.names = NA, quote = FALSE)
+pcoa <- cmdscale(bray_dis, k = (nrow(otu) - 1), eig = TRUE)
+dis <- read.delim('bray_distance.txt', row.names = 1, sep = '\t', stringsAsFactors = FALSE, check.names = FALSE)
+bray_dis <- as.dist(dis)
+pcoa <- cmdscale(bray_dis, k = (nrow(dis) - 1), eig = TRUE)
+pcoa_eig <- pcoa$eig
+barplot(pcoa_eig)
+pcoa_exp <- pcoa$eig/sum(pcoa$eig)
+head(pcoa_exp)
+site <- pcoa$point
+
+write.csv(site, 'pcoa_site2.csv', quote = FALSE)
+#Add the group/group1/goup2 name at the end of the column, save as a txt file
+
+library(ggplot2)
+pcoa_site <- read.delim('pcoa_site2.txt', sep = '\t', stringsAsFactors = FALSE)
+pcoa_site$group <- paste(pcoa_site$group, sep = '_')
+
+p <- ggplot(data = pcoa_site, aes(x = V1, y = V2)) + 
+        theme(axis.text.x = element_text(colour = "black", size = 11), 
+        axis.text.y = element_text(size = 11, colour = "black"), 
+        axis.title= element_text(face = "bold", size = 13, colour = "black"),
+        panel.background = element_rect(fill="#ebebeb"),
+        panel.border = element_rect(fill = NA, colour = "black"), 
+        legend.key = element_rect(fill = 'transparent')) +
+  labs(x = 'PCA1: 43.37%', y = 'PCA2: 21.14%')
+p<- p + geom_point(size = 2.5, alpha = 1, aes(color = group1, shape=group2)) +
+  scale_color_manual(values = c("#e84306", "#1195e7", "#16b316", "#b36123", "#e8a418", "#c710c7", "#0072B2"))
+p
