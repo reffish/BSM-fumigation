@@ -1,0 +1,152 @@
+library(vegan)
+
+T3 <- read.table('T3-OTU.txt', head=T, row.names=1)
+T3<- T3[which(rowSums(T3)>=1),]
+T3 <- t(T3)
+dist.abund <- vegdist(T3, method = 'bray')
+
+ENV <- read.table('T3-ENV.txt', head=T, row.names=1)
+T2 <- read.table('T2-OTU.txt', head=T, row.names=1)
+T2<- T2[which(rowSums(T2)>=1),]
+T2 <- t(T2)
+
+dist.pH <- dist(ENV$pH, method = 'euclidean')
+dist.TOC <- dist(ENV$TOC, method = 'euclidean')
+dist.TN <- dist(ENV$TN, method = 'euclidean')
+dist.TP <- dist(ENV$TP, method = 'euclidean')
+dist.TK <- dist(ENV$TK, method = 'euclidean')
+dist.NO3 <- dist(ENV$NO3 , method = 'euclidean')
+dist.NH4 <- dist(ENV$NH4, method = 'euclidean')
+dist.Ec <- dist(ENV$Ec, method = 'euclidean')
+dist.AP <- dist(ENV$AP, method = 'euclidean')
+dist.AK <- dist(ENV$AK, method = 'euclidean')
+
+dist.T2 <- vegdist(T2, method = 'bray')
+
+
+
+## Mantel tests，
+pH <- mantel(dist.abund, dist.pH, method = 'spearman', permutations = 9999, na.rm = TRUE)
+pH <- cbind(pH$statistic,pH$signif)
+Ec <- mantel(dist.abund, dist.Ec, method = 'spearman', permutations = 9999, na.rm = TRUE)
+Ec <- cbind(Ec$statistic,Ec$signif)
+TOC <- mantel(dist.abund, dist.TOC, method = 'spearman', permutations = 9999, na.rm = TRUE)
+TOC <- cbind(TOC$statistic,TOC$signif)
+TN <- mantel(dist.abund, dist.TN, method = 'spearman', permutations = 9999, na.rm = TRUE)
+TN <- cbind(TN$statistic,TN$signif)
+TP <- mantel(dist.abund, dist.TP, method = 'spearman', permutations = 9999, na.rm = TRUE)
+TP <- cbind(TP$statistic,TP$signif)
+TK <- mantel(dist.abund, dist.TK, method = 'spearman', permutations = 9999, na.rm = TRUE)
+TK <- cbind(TK$statistic,TK$signif)
+NO3 <- mantel(dist.abund, dist.NO3, method = 'spearman', permutations = 9999, na.rm = TRUE)
+NO3 <- cbind(NO3$statistic,NO3$signif)
+NH4 <- mantel(dist.abund, dist.NH4, method = 'spearman', permutations = 9999, na.rm = TRUE)
+NH4 <- cbind(NH4$statistic,NH4$signif)
+AP <- mantel(dist.abund, dist.AP, method = 'spearman', permutations = 9999, na.rm = TRUE)
+AP <- cbind(AP$statistic,AP$signif)
+AK <- mantel(dist.abund, dist.AK, method = 'spearman', permutations = 9999, na.rm = TRUE)
+AK <- cbind(AK$statistic,AK$signif)
+T2 <- mantel(dist.abund, dist.T2, method = 'spearman', permutations = 9999, na.rm = TRUE)
+T2 <- cbind(T2$statistic,T2$signif)
+T2
+env <- rbind(pH,Ec,TOC,TN,TP,TK,NO3,NH4,AP,AK,T2) 
+row.names(env) <- c("pH","Ec","TOC","TN","TP","TK","NO3","NH4","AP","AK","T2")
+write.csv(env,"mantelenv-T3-ALL.csv")
+
+T2 <- as.vector(dist.T2)
+AP <- as.vector(dist.AP)
+NH4 <- as.vector(dist.NH4)
+TN <- as.vector(dist.TN)
+TP <- as.vector(dist.TP)
+TOC <- as.vector(dist.TOC)
+AK <- as.vector(dist.AK)
+NO3 <- as.vector(dist.NO3)
+TK <- as.vector(dist.TK)
+pH <- as.vector(dist.pH)
+Ec <- as.vector(dist.Ec)
+
+T3 <- as.vector(dist.abund)
+mat <- data.frame(T2,AP,NH4,TN,TP,TOC,AK,NO3,TK,pH,Ec,T3)
+
+write.csv(mat,"distance.csv")
+
+bray <- T3
+
+fit1 <- lm(pH~bray, data = mat)
+summary(fit1)  
+fit2 <- lm(TOC~bray, data = mat)
+summary(fit2) 
+fit3 <- lm(TP~bray, data = mat)
+summary(fit3) 
+fit4 <- lm(AP~bray, data = mat)
+summary(fit4) 
+fit5 <- lm(NH4~bray, data = mat)
+summary(fit5) 
+fit6 <- lm(TN~bray, data = mat)
+summary(fit6) 
+fit7 <- lm(T2~bray, data = mat)
+summary(fit7) 
+fit8 <- lm(Ec~bray, data = mat)
+summary(fit8) 
+fit9 <- lm(TK~bray, data = mat)
+summary(fit9) 
+fit10 <- lm(AK~bray, data = mat)
+summary(fit10)
+fit11 <- lm(NO3~bray, data = mat)
+summary(fit11)
+
+data <- read.delim("ENV-OTU.txt",row.names = 1,header = T)
+data <- within(data, group <- factor(group, levels = c('AP','NH4','TOC','TP','AK','pH','TN',"NO3",'TK','T2')))
+library(ggplot2)
+###ALL
+
+mm <- ggplot(data, aes(x = env, y = y)) +  
+  facet_wrap(.~group, scales = 'free_x', ncol=3) +
+  geom_smooth(method = 'lm', alpha = 0.5, colour = 'blue',size =2) + 
+  geom_point(alpha = 0.6, colour = "black", size = 4) +
+  labs(y = 'Bray-curtis distance', x = 'Difference in Nutrient content') + 
+  theme( axis.text.x = element_text(face = 'bold',colour = 'black', size = 12), 
+         axis.text.y = element_text(face = 'bold', size = 10, colour = 'black'), 
+         axis.title= element_text(face = 'bold', size = 14, colour = 'black'), 
+         panel.background = element_blank(), 
+         panel.border = element_rect(fill = NA, colour = 'black'), 
+         legend.title = element_text(size =12, face = 'bold', colour = 'black'),
+         legend.text = element_text(size = 10, face = 'bold', colour = 'black'), 
+         legend.position = 'top', strip.background = element_rect(fill = 'grey90', colour = 'black'),
+         strip.text = element_text(size = 9, face = 'bold')) 
+mm
+
+
+ggsave(file=paste("1.pdf", sep=""), mm, width = 9, height = 12, useDingbats=F)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
