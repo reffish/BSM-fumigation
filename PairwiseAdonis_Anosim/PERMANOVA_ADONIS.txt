@@ -1,0 +1,46 @@
+library(vegan)
+library(pairwiseAdonis)
+otu <- read.delim('OTU.txt', row.names = 1, sep = '\t')
+otu <- data.frame(t(otu))
+group <- read.delim('group.txt', sep = '\t', stringsAsFactors = TRUE)
+set.seed(123)
+adonis_result <- adonis(otu~group, group, distance = 'bray', permutations = 999)
+adonis_result
+library(pairwiseAdonis)
+set.seed(123)
+result3 <- pairwise.adonis(x = otu, factors = group$group, sim.method = 'bray', perm = 999, p.adjust.m = 'fdr')
+result3
+write.csv(result3, 'pairwiseAdonis.T4.csv', row.names = FALSE, quote = FALSE)
+
+
+
+##########ANOSIM
+
+library(vegan)
+
+otu <- read.delim('OTU.txt', row.names = 1, sep = '\t', stringsAsFactors = FALSE, check.names = FALSE)
+otu <- data.frame(t(otu))
+
+group <- read.delim('group.txt', sep = '\t', stringsAsFactors = FALSE)
+anosim_result <- anosim(otu, group$site, distance = 'bray', permutations = 999)
+summary(anosim_result)
+group_name <- unique(group$site)
+
+dir.create('anosim_two', recursive = TRUE)
+anosim_result_two <- NULL
+for (i in 1:(length(group_name) - 1)) {
+  for (j in (i + 1):length(group_name)) {
+    group_ij <- subset(group, site %in% c(group_name[i], group_name[j]))
+    otu_ij <- otu[group_ij$names, ]
+    anosim_result_otu_ij <- anosim(otu_ij, group_ij$site, permutations = 999, distance = 'bray')     #Bray-Curtis   perm = 999
+    anosim_result_two <- rbind(anosim_result_two, c(paste(group_name[i], group_name[j], sep = '/'), 'Bray-Curtis', anosim_result_otu_ij$statistic, anosim_result_otu_ij$signif))
+    
+  }
+}
+
+anosim_result_two <- data.frame(anosim_result_two, stringsAsFactors = FALSE)
+names(anosim_result_two) <- c('group', 'distance', 'R', 'P_value')
+anosim_result_two$P_value <- as.numeric(anosim_result_two$P_value)
+anosim_result_two$P_adj_BH <- p.adjust(anosim_result_two$P_value, method = 'BH')
+
+write.table(anosim_result_two, 'ANOSIM.T4.txt', row.names = FALSE, sep = '\t', quote = FALSE, na = '')
