@@ -1,0 +1,64 @@
+library(DESeq2)
+
+#####T2
+gene <- read.delim('CK-B-T2.txt', row.names = 1, sep = '\t', stringsAsFactors = FALSE, check.names = FALSE)
+coldata <- data.frame(group = factor(rep(c('control', 'treat'), each = 4), levels = c('control', 'treat')))
+
+dds <- DESeqDataSetFromMatrix(countData = gene, colData = coldata, design = ~group)
+dds <- DESeq(dds, parallel = FALSE)	
+suppressMessages(dds)
+res <- results(dds, contrast = c('group', 'treat', 'control'), pAdjustMethod = 'fdr', alpha = 0.05)
+#an alternate analysis: likelihood ratio test
+ddsLRT <- DESeq(dds, test = 'LRT', reduced = ~ 1)
+suppressMessages(ddsLRT)
+resLRT <- results(ddsLRT, contrast = c('group', 'treat', 'control'), pAdjustMethod = 'fdr', alpha = 0.05)
+res
+summary(res)
+plotMA(res, alpha = 0.05, ylim = c(-3, 3))
+deseq_res <- as.data.frame(res[order(res$padj), ])
+deseq_res$gene_id <- rownames(deseq_res)
+write.table(deseq_res[c(7, 1:6)], 'T2-DESeq(CK-B).txt', row.names = FALSE, sep = '\t', quote = FALSE)
+
+#####T3
+gene <- read.delim('CK-B-T3.txt', row.names = 1, sep = '\t', stringsAsFactors = FALSE, check.names = FALSE)
+coldata <- data.frame(group = factor(rep(c('control', 'treat'), each = 4), levels = c('control', 'treat')))
+
+dds <- DESeqDataSetFromMatrix(countData = gene, colData = coldata, design = ~group)
+dds <- DESeq(dds, parallel = FALSE)	
+suppressMessages(dds)
+res <- results(dds, contrast = c('group', 'treat', 'control'), pAdjustMethod = 'fdr', alpha = 0.05)
+#an alternate analysis: likelihood ratio test
+ddsLRT <- DESeq(dds, test = 'LRT', reduced = ~ 1)
+suppressMessages(ddsLRT)
+resLRT <- results(ddsLRT, contrast = c('group', 'treat', 'control'), pAdjustMethod = 'fdr', alpha = 0.05)
+res
+summary(res)
+plotMA(res, alpha = 0.05, ylim = c(-3, 3))
+deseq_res <- as.data.frame(res[order(res$padj), ])
+deseq_res$gene_id <- rownames(deseq_res)
+write.table(deseq_res[c(7, 1:6)], 'T3-DESeq(CK-B).txt', row.names = FALSE, sep = '\t', quote = FALSE)
+
+#####T4
+gene <- read.delim('CK-B-T4.txt', row.names = 1, sep = '\t', stringsAsFactors = FALSE, check.names = FALSE)
+coldata <- data.frame(group = factor(rep(c('control', 'treat'), each = 4), levels = c('control', 'treat')))
+
+dds <- DESeqDataSetFromMatrix(countData = gene, colData = coldata, design = ~group)
+dds <- DESeq(dds, parallel = FALSE)	
+suppressMessages(dds)
+res <- results(dds, contrast = c('group', 'treat', 'control'), pAdjustMethod = 'fdr', alpha = 0.05)
+#an alternate analysis: likelihood ratio test
+ddsLRT <- DESeq(dds, test = 'LRT', reduced = ~ 1)
+suppressMessages(ddsLRT)
+resLRT <- results(ddsLRT, contrast = c('group', 'treat', 'control'), pAdjustMethod = 'fdr', alpha = 0.05)
+res
+summary(res)
+plotMA(res, alpha = 0.05, ylim = c(-3, 3))
+deseq_res <- as.data.frame(res[order(res$padj), ])
+deseq_res$gene_id <- rownames(deseq_res)
+write.table(deseq_res[c(7, 1:6)], 'T4-DESeq(CK-B).txt', row.names = FALSE, sep = '\t', quote = FALSE)
+
+### performed in CK-B /// T2, T3, T4，respectively 
+The species with significantly higher or lower abundance in fumigated soil than in CK at the end of the fumigation period (T2) 
+represented species with stronger or weaker resistance, respectively, to fumigation.
+ The species with no significant change in abundance indicated moderate resistance. 
+After the recovery of fumigated soil communities (T3), the resilience of species was determined by calculating the changes in their abundance.
