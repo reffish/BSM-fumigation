@@ -1,0 +1,42 @@
+library("ggplot2")
+library("dplyr")
+library("reshape")
+library("psych")
+library("ggtree")
+library("aplot")
+
+otu<-read.table("T.txt",sep ="\t",row.names= 1, header = T)
+
+table1 <- otu[,1:9] %>% as.matrix()
+table2 <- otu[,10:ncol(otu)] %>% as.matrix()
+
+design <- read.delim("T-group.txt", row.names = 1,header = T)
+annot_data <- data.frame(row.names=colnames(table2), group=design$group)
+
+library(psych)
+data.corr <- corr.test(table2,table1, method="pearson",adjust = "fdr")
+data.r <- data.corr$r  
+data.p <- data.corr$p  
+
+library(pheatmap)
+pheatmap(data.r, clustering_method="average")
+
+getSig <- function(dc) {
+  sc <- ''
+  if (dc < 0.01) sc <- '***'
+  else if (dc < 0.05) sc <- '**'
+  else if (dc < 0.1) sc <- '*'
+  sc
+}
+sig.mat <- matrix(sapply(data.p, getSig), nrow=nrow(data.p))
+str(sig.mat)
+
+pheatmap(data.r, cluster_col = F,annotation_row =annot_data,
+         display_numbers=sig.mat, 
+         fontsize_number = 13,fontsize = 10,
+         angle_col = 0, cutree_rows = 4,
+)
+
+
+## height = 9.6, width = 7.9
+
