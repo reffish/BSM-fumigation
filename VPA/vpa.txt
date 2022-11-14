@@ -1,0 +1,11 @@
+library(vegan)
+otu <- read.delim("T3-OTU.txt",row.names = 1,header = T)
+otu<- t(otu)
+env <- read.delim("T3-ENV.txt", row.names = 1,header = T)
+T2 <- read.delim("pcoa_site.txt",row.names = 1,header = T)
+T2 <- T2[,1:4]
+row.names(T2) <- row.names(env)
+
+mod <- varpart(otu, T2, env, transfo="hel")
+mod
+plot(mod, bg = c("hotpink","skyblue"))
